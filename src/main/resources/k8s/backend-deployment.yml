@@ -1,0 +1,89 @@
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: backend-ecommerce
+#  labels:
+#    app: backend-ecommerce
+#spec:
+#  type: NodePort
+#  ports:
+#    - port: 8080
+#      targetPort: 8080
+#      protocol: TCP
+#      nodePort: 30163
+#  selector:
+#    app: backend-ecommerce
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-ecommerce-service # DNS name
+  labels:
+    app: backend-ecommerce
+    tier: backend
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: backend-ecommerce
+    tier: backend
+  clusterIP: None   # Use dns instead clusterIp
+---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: backend-ecommerce
+#  labels:
+#    app: backend-ecommerce
+#spec:
+#  selector:
+#    app: backend-ecommerce
+#  ports:
+#    - protocol: TCP
+#      port: 8080
+#      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-ecommerce
+spec:
+  selector:
+    matchLabels:
+      app: backend-ecommerce
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend-ecommerce
+        tier: backend
+    spec:
+      containers:
+        - name: backend-ecommerce
+          image: ecommerce-backend:0.0.17
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: host
+                  name: db-conf
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: name
+                  name: db-conf
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: db-credentials
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: db-credentials
+

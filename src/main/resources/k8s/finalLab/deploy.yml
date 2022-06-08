@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:stable
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "150m"
+          limits:
+            memory: "50Mi"
+            cpu: "150m"
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: index-html-volume
+          mountPath: /usr/share/nginx/html
+        envFrom:
+        - configMapRef:
+            name: index-html                  
+      volumes:
+      - name: index-html-volume
+        configMap:
+          name: index-html
+        

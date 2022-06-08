@@ -1,0 +1,37 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: frontend-ecommerce-deployment
+  labels:
+    app: frontend-ecommerce-deployment
+spec:
+  selector:
+    matchLabels:
+      app: frontend-ecommerce-deployment
+  template:
+    metadata:
+      labels:
+        app: frontend-ecommerce-deployment
+    spec:
+      containers:
+      - name: frontend-ecommerce-deployment
+        image: ecommerce-frontend:0.0.9
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-ecommerce-service
+  labels:
+    name: frontend-ecommerce-deployment
+spec:
+  selector:
+    app: frontend-ecommerce-deployment
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30170

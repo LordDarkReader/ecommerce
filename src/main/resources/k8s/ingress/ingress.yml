@@ -1,0 +1,167 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nginx1
+  labels:
+    app: nginx1
+spec:
+  selector:
+    matchLabels:
+      app: nginx1
+  template:
+    metadata:
+      labels:
+        app: nginx1
+    spec:
+      hostname: nginx1
+      containers:
+      - name: nginx
+        image: stenote/nginx-hostname
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx1
+  labels:
+    app: nginx1
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: nginx1
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nginx2
+  labels:
+    app: nginx2
+spec:
+  selector:
+    matchLabels:
+      app: nginx2
+  template:
+    metadata:
+      labels:
+        app: nginx2
+    spec:
+      hostname: nginx2
+      containers:
+      - name: nginx
+        image: stenote/nginx-hostname
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx2
+  labels:
+    app: nginx2
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: nginx2
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress-1
+spec:
+  rules:
+    - host: nginx1.example.com
+      http:
+        paths:
+          - path: "/"
+            backend:
+              name: nginx1
+              port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+spec:
+  rules:
+    - host: nginx2.example.com
+      http:
+        paths:
+          - path: "/"
+            backend:
+              name: nginx2
+              port: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress-3
+spec:
+  rules:
+    - host: nginx.example.com
+      http:
+        paths:
+          - path: "/nginx1"
+            backend:
+              name: nginx1
+              port: 80
+          - path: "/nginx2"
+            backend:
+              name: nginx2
+              port: 80
+                #apiVersion: networking.k8s.io/v1beta1
+#kind: Ingress
+#metadata:
+#  name: nginx-ingress-1
+#spec:
+#  rules:
+#  - host: nginx1.example.com
+#    http:
+#      paths:
+#      - pathType: Prefix
+#        path: "/"
+#        backend:
+#          serviceName: nginx1
+#          servicePort: 80
+#---
+#apiVersion: networking.k8s.io/v1beta1
+#kind: Ingress
+#metadata:
+#  name: nginx-ingress
+#spec:
+#  rules:
+#  - host: nginx2.example.com
+#    http:
+#      paths:
+#      - pathType: Prefix
+#        path: "/"
+#        backend:
+#          serviceName: nginx2
+#          servicePort: 80
+#
+#---
+#apiVersion: networking.k8s.io/v1beta1
+#kind: Ingress
+#metadata:
+#  name: nginx-ingress-3
+#spec:
+#  rules:
+#  - host: nginx.example.com
+#    http:
+#      paths:
+#      - pathType: Prefix
+#        path: "/nginx1"
+#        backend:
+#          serviceName: nginx1
+#          servicePort: 80
+#      - pathType: Exact
+#        path: "/nginx2"
+#        backend:
+#          serviceName: nginx2
+#          servicePort: 80

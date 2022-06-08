@@ -1,0 +1,54 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nginx-backend
+  labels:
+    app: nginx-backend
+spec:
+  selector:
+    matchLabels:
+      app: nginx-backend
+  template:
+    metadata:
+      labels:
+        app: nginx-backend
+    spec:
+      hostname: nginx-backend
+      containers:
+      - name: nginx-backend
+        image: czarek7777/ecommerceapp-backend:0.0.7
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+          - name: MYSQL_URL
+            value: jdbc:mysql://10.105.53.13:3306/fullstackecommercew
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-backend
+  labels:
+    app: nginx-backend
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: nginx-backend
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-ingress-backend
+spec:
+  rules:
+  - host: nginx1.example.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          serviceName: nginx-backend
+          servicePort: 80   
+        

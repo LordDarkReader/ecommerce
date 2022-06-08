@@ -1,0 +1,53 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: example-cronjob
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: cronjob-list
+          containers:
+          - name: example-job
+            image: devopslabss/registry-secret:rbac
+            command: ["/bin/sh", "-c", "--"]
+            args: ["kubectl get pods,deploy,cronjobs"]
+          restartPolicy: Never
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cronjob-role
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: ["batch"]
+  resources: ["cronjobs"]
+  verbs: ["get", "list"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cronjob-binding
+subjects:
+- kind: ServiceAccount
+  name: cronjob-list
+  apiGroup: ""
+roleRef:
+  kind: Role
+  name: cronjob-role
+  apiGroup: rbac.authorization.k8s.io
+---
+ServiceAccount:
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cronjob-list
+imagePullSecrets:
+- name: cronjob-list
